@@ -20,6 +20,32 @@ class MorseCodeApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
+        textTheme: ThemeData.light().textTheme,
+        inputDecorationTheme: InputDecorationTheme(
+          labelStyle: TextStyle(color: Colors.blue.shade800),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.blue.shade800, width: 2),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.blue.shade300),
+          ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            foregroundColor: Colors.blue.shade800,
+          ),
+        ),
       ),
       home: const MorseCodeHome(),
     );
@@ -39,6 +65,7 @@ class _MorseCodeHomeState extends State<MorseCodeHome> {
   final TextEditingController _receivedController = TextEditingController();
   String _currentMorseChar = '';
   String _morseOutput = '';
+  String _decodedText = '';
   bool _isFlashing = false;
 
   final Telephony telephony = Telephony.instance;
@@ -111,7 +138,7 @@ class _MorseCodeHomeState extends State<MorseCodeHome> {
 
   Future<void> _sendMorseSMS() async {
     if (_phoneController.text.isEmpty || _textController.text.isEmpty) {
-      _showMessage('Please enter phone number and text');
+      _showMessage('Please enter phone number ');
       return;
     }
 
@@ -142,7 +169,9 @@ class _MorseCodeHomeState extends State<MorseCodeHome> {
 
     try {
       String decodedText = morseService.morseToText(_receivedController.text);
-      _showMessage('Decoded text: $decodedText');
+      setState(() {
+        _decodedText = decodedText;
+      });
     } catch (e) {
       _showMessage('Failed to decode: $e');
     }
@@ -165,99 +194,160 @@ class _MorseCodeHomeState extends State<MorseCodeHome> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Morse Code App')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              TextField(
-                controller: _textController,
-                decoration: const InputDecoration(
-                  labelText: 'Enter text to convert to Morse code',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 2,
-              ),
-              const SizedBox(height: 16),
-              if (_morseOutput.isNotEmpty)
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.blue),
-                    borderRadius: BorderRadius.circular(4),
+      appBar: AppBar(
+        title: const Text(
+          'Morse Code',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+        elevation: 0,
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Text(
-                    'Morse Code: $_morseOutput',
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                ),
-
-              const SizedBox(height: 16),
-              if (_currentMorseChar.isNotEmpty)
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.amber,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    'Current: $_currentMorseChar',
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        TextField(
+                          controller: _textController,
+                          decoration: const InputDecoration(
+                            labelText: 'Enter text to convert to Morse code',
+                            border: OutlineInputBorder(),
+                          ),
+                          maxLines: 2,
+                        ),
+                        const SizedBox(height: 16),
+                        if (_morseOutput.isNotEmpty)
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.blue.shade200),
+                              borderRadius: BorderRadius.circular(8),
+                              color: Colors.blue.shade50,
+                            ),
+                            child: Text(
+                              'Morse Code: $_morseOutput',
+                              style: const TextStyle(fontSize: 25),
+                            ),
+                          ),
+                        const SizedBox(height: 16),
+                        if (_currentMorseChar.isNotEmpty)
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.blue,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              ' $_currentMorseChar',
+                              style: const TextStyle(
+                                fontSize: 25,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _isFlashing ? null : _flashMorseCode,
+                          child: Text(
+                            _isFlashing ? 'Flashing...' : 'Flash Morse Code',
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _isFlashing ? null : _flashMorseCode,
-                child: Text(_isFlashing ? 'Flashing...' : 'Flash Morse Code'),
-              ),
-
-              const SizedBox(height: 24),
-              const Divider(),
-              const SizedBox(height: 24),
-
-              TextField(
-                controller: _phoneController,
-                decoration: const InputDecoration(
-                  labelText: 'Enter phone number',
-                  border: OutlineInputBorder(),
+                const SizedBox(height: 24),
+                Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        TextField(
+                          controller: _phoneController,
+                          decoration: const InputDecoration(
+                            labelText: 'Enter phone number',
+                            border: OutlineInputBorder(),
+                          ),
+                          keyboardType: TextInputType.phone,
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _sendMorseSMS,
+                          child: const Text('Send Morse Code via SMS'),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                keyboardType: TextInputType.phone,
-              ),
-              const SizedBox(height: 16),
-
-              ElevatedButton(
-                onPressed: _sendMorseSMS,
-                child: const Text('Send Morse Code via SMS'),
-              ),
-
-              const SizedBox(height: 24),
-              const Divider(),
-              const SizedBox(height: 24),
-
-              TextField(
-                controller: _receivedController,
-                decoration: const InputDecoration(
-                  labelText:
-                      'Enter received Morse code (space between letters, / between words)',
-                  border: OutlineInputBorder(),
-                  helperText:
-                      'Incoming Morse SMS will appear here automatically',
+                const SizedBox(height: 24),
+                Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const Text(
+                          'Write the Morse code (use space between letters and / between words)',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: _receivedController,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            helperText:
+                                'Any Morse SMS received will appear here',
+                          ),
+                          maxLines: 3,
+                        ),
+                        const SizedBox(height: 16),
+                        if (_decodedText.isNotEmpty)
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.blue.shade200),
+                              borderRadius: BorderRadius.circular(8),
+                              color: Colors.blue.shade50,
+                            ),
+                            child: Text(
+                              'Decoded Text: $_decodedText',
+                              style: const TextStyle(fontSize: 25),
+                            ),
+                          ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _decodeMorseCode,
+                          child: const Text('Decode Morse Code'),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                maxLines: 3,
-              ),
-              const SizedBox(height: 16),
-
-              ElevatedButton(
-                onPressed: _decodeMorseCode,
-                child: const Text('Decode Morse Code'),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

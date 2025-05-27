@@ -131,7 +131,7 @@ class MorseService {
         if (morseCode.containsKey(char)) {
           String morse = morseCode[char]!;
 
-          onCharFlashing('$char: $morse');
+          onCharFlashing('$char:      $morse');
 
           for (int j = 0; j < morse.length; j++) {
             if (morse[j] == '.') {
