@@ -73,7 +73,7 @@ class MorseService {
     for (int i = 0; i < text.length; i++) {
       String char = text[i].toUpperCase();
       if (morseCode.containsKey(char)) {
-        morse += morseCode[char]! + ' ';
+        morse += '${morseCode[char]!} ';
       } else {
         morse +=
             ' '; //adaug un spatiu pt caractere pe care nu le am in dictionarul morse

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:morse_code/morse_service.dart';
 import 'package:torch_light/torch_light.dart';
 import 'package:telephony/telephony.dart';
@@ -53,7 +52,7 @@ class MorseCodeApp extends StatelessWidget {
 }
 
 class MorseCodeHome extends StatefulWidget {
-  const MorseCodeHome({Key? key}) : super(key: key);
+  const MorseCodeHome({super.key});
 
   @override
   _MorseCodeHomeState createState() => _MorseCodeHomeState();
